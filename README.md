@@ -124,23 +124,22 @@ So now we have our mesh. But what can we actually do with it? I decided to go fo
 
 One advantage of the quad mesh is, that we can place deformed square tiles at each quad. The math for this is relatively simple. We only need to deform our mesh in the $$x$$- and $$y$$-directions (assuming $$z$$ is up) since we can just extrude the $$z$$ component along the quads normal vector.
 
-Now let's assume that our tiles' corner points are $$\vec{a} = (0, 0)$$, $$\vec{b} = (1, 0)$$, $$\vec{c} = (0, 1)$$ and $$vec{d} = (1, 1)$$ (that is, our tile is a *unit square*). A arbitrary quad on our mesh is defined by four vertices in 3D space, let's call them $$\vec{a}'$$, $$\vec{b}'$$, $$\vec{c}'$$ and $$\vec{c}'$$.
+Now let's assume that our tiles' corner points are $$\vec{a} = (0, 0)$$, $$\vec{b} = (1, 0)$$, $$\vec{c} = (0, 1)$$ and $$\vec{d} = (1, 1)$$ (that is, our tile is a *unit square*). A arbitrary quad on our mesh is defined by four vertices in 3D space, let's call them $$\vec{a}'$$, $$\vec{b}'$$, $$\vec{c}'$$ and $$\vec{c}'$$.
 
 Then, each coordinate $$\vec{p} = (x, y)$$ in the original tile can be described by the bilinear parametrisation
 
 $$\begin{align}
-  \vec{p} &= \vec{a} + \gamma \vec{b} + \mu \vec{c} + \gamma \mu \vec{d}
+  \vec{p} &= (1 - x) \cdot (1 - y) \cdot \vec{a} + x \cot (1 - y) \cdot \vec{b}) + (1 - x) \cdot y \cdot \vec{c} + x \cdot y \cdot \vec{d}
+          &= \vec{a} + x \cdot (1 - y) \cdot (\vec{b} - \vec{a}) + (1 - x) \cdot y \cdot (\vec{c} - \vec{a}) + x \cdot y \cdot (\vec{d} - \vec{a})
 \end{align}$$
 
-Since we're in a unit square, we can pretty easily see that $$\gamma = x$$ and $$\mu = y$$. 
-
-The can transform to the coordinate $$\vec{p}'$$ in new quad by using the same parametrisation:
+We can easily transform this parametrisation to the new quad
 
 $$\begin{align}
-  \vec{p}' &= \vec{a}' + \gamma \vec{b}' + \mu \vec{c}' + \gamma \mu \vec{d}' \\
-           &= \vec{a}' + x \vec{b}' + y \vec{c'} + x y \vec{d}'
+  \vec{p}' &= \vec{a}' + x \cdot (1 - y) \cdot (\vec{b}' - \vec{a}') + (1 - x) \cdot y \cdot (\vec{c}' - \vec{a}') + x \cdot y \cdot (\vec{d}' - \vec{a}')
 \end{align}$$
 
+where $$\vec{p}'$$ is the resulting coordinate.
 
 {{ site.beginInfoBox }}
 {{ site.beginInfoBoxTitle }}
