@@ -102,3 +102,18 @@ The mesh with all faces subdivided into quads.
 We are now almost where we want to be but the mesh does not look very organic yet. This is where the mesh relaxation comes in. For me, this was the most tricky step since it involved some experimentation to get it to look right.
 
 In the simpler case of a mesh in a plane, there are some ressources available which outline possible relaxation methods, like [this article](https://andersource.dev/2020/11/06/organic-grid.html) from andersource.dev, but most of them seem to involve [letting each quad force its vertices into a square](https://twitter.com/OskSta/status/1147946734326288390).
+
+I see no reason why an approach like this shouldn't work on a spherical mesh as well. However, I approached the problem from a slightly different angle and started with [Laplacian smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing) which is generally used to make meshes smoother. In the end I needed to augment this by adding forces which try to prevent too small/large and thin quads as well. There are probably many good ways too relax the mesh but some good guidelines should be:
+
+* each quad should be as square as possible
+* all quads should have approximately the same area
+* or any similar criteria
+
+Using my approach, the final result looks like this:
+
+{{ site.beginFigure }}
+<img src="assets/final_mesh.png" width="50%">
+{{ site.beginCaption }}
+✨ The final mesh! ✨
+{{ site.endCaption }}
+{{ site.endFigure }}
