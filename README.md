@@ -34,7 +34,7 @@ To summarize the algorithm:
 1. Start with a triangulation (in this case triangles in a hexagon)
 2. Remove random edges triangles to create quads (we will now have a grid consisting of mostly quads but also some triangles)
 3. Subdivide *all quads and triangles* into new quads
-4. Relax the grid to make it look more natural
+4. Relax the mesh to make it look more natural
 
 So now that we know the basic algorithm for meshes in a plane, what do we need to do to adapt it for a sphere?
 
@@ -68,4 +68,37 @@ Our starting triangulation, the icosphere.
 
 ### Step 2: Removing Edges
 
-Removing edges is relatively straightforward. We need to
+Removing edges is relatively straightforward. However, we need to be careful to keep track of which edges we have already removed as to not accidentally remove an edge of an already quad face: When we remove an edge, we can't remove the edges of the two now merged faces either. I solved this by keeping track of a separate set of edges that are stil "available" and only removing edges listed in it from the mesh. If we did everything right, our former icosphere should now look something like this:
+
+{{ site.beginFigure }}
+<img src="assets/removed_edges.png" width="50%">
+{{ site.beginCaption }}
+The mesh after the edge removal step.
+{{ site.endCaption }}
+{{ site.endFigure }}
+
+### Step 3: Subdivide Faces
+
+We are currently facing one problem: Our result should be a *quad* mesh, that is, a mesh consisting only of faces with four corners. But there are still some triangles left in our current mesh. Luckily, triangles can easily subdivided into three smaller quads from the middle of each edge. In the same way, the already existing quads can be subdivided into four smaller quads. By doing this, we thus end up with a mesh consisting *only* of quads.
+
+{{ site.beginFigure }}
+<img src="assets/subdivide_quad.png" width="20%"> <img src="assets/subdivide_tri.png" width="20%">
+{{ site.beginCaption }}
+Subdividing a quad and a triangle into smaller quads.
+{{ site.endCaption }}
+{{ site.endFigure }}
+
+Done correctly, our mesh now looks like this:
+
+{{ site.beginFigure }}
+<img src="assets/subdivided_faces.png" width="50%">
+{{ site.beginCaption }}
+The mesh with all faces subdivided into quads.
+{{ site.endCaption }}
+{{ site.endFigure }}
+
+### Step 4: Mesh Relaxation
+
+We are now almost where we want to be but the mesh does not look very organic yet. This is where the mesh relaxation comes in. For me, this was the most tricky step since it involved some experimentation to get it to look right.
+
+In the simpler case of a mesh in a plane, there are some ressources available which outline possible relaxation methods, like [this article](https://andersource.dev/2020/11/06/organic-grid.html) from andersource.dev, but most of them seem to involve [letting each quad force its vertices into a square](https://twitter.com/OskSta/status/1147946734326288390).
