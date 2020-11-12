@@ -1,0 +1,12 @@
+remote-theme:
+  captainproton42/protontheme
+  
+beginInfoBox: "<div markdown='1' class='infobox'>"
+endInfoBox: "</div>"
+beginInfoBoxTitle: "<div class='infobox-title'>"
+endInfoBoxTitle: "</div>"
+
+beginFigure: "<div markdown='1' class='figure'>"
+endFigure: "</div>"
+beginCaption: "<p markdown='1' class='figure-caption'>"
+endCaption: "</p>"
