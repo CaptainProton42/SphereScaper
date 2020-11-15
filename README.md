@@ -105,7 +105,7 @@ We are now almost where we want to be but the mesh does not look very organic ye
 
 In the simpler case of a mesh in a plane, there are some ressources available which outline possible relaxation methods, like [this article](https://andersource.dev/2020/11/06/organic-grid.html) from andersource.dev, but most of them seem to involve [letting each quad force its vertices into a square shape](https://twitter.com/OskSta/status/1147946734326288390).
 
-I see no reason why an approach like this shouldn't work on a spherical mesh as well. However, I approached the problem from a slightly different angle and started with [Laplacian smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing) which is generally used smooth meshes. In the end I needed to augment this by adding forces which try to prevent too small/large and thin quads as well. There are probably many good ways too relax the mesh but some good guidelines should be:
+I see no reason why an approach like this shouldn't work on a spherical mesh as well. However, I approached the problem from a slightly different angle and started with [Laplacian smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing) which is generally used to smooth meshes. In the end I needed to augment this by adding forces which try to prevent too small/large and thin quads as well. There are probably many good ways too relax the mesh but some good guidelines should be:
 
 - each quad should be as square as possible
 - all quads should have approximately the same area
@@ -124,16 +124,16 @@ Using my approach, the final result looks like this:
 
 ### Deforming the Tiles
 
-So now we have our mesh. But what can we actually do with it? I decided to go for a *very* minimalistic Townscaper clone which uses the sphere mesh for building. Call it *SphereScaper* or an equally creative name.
+So now we have our mesh. But what can we actually do with it? I decided to go for a *very* minimalistic Townscaper "clone" which uses the sphere mesh for tile placement. Call it *SphereScaper* or an equally creative name.
 
-One advantage of the quad mesh is, that we can place deformed square tiles at each quad. The math for this is relatively simple. We only need to deform our mesh in the $$x$$- and $$y$$-directions (assuming $$z$$ is up) since we can just extrude the $$z$$ component along the quads normal vector.
+One advantage of a quad mesh is that we can place deformed square tiles at each face. The math for this is relatively simple. We only need to deform our mesh's $$x$$- and $$y$$-coordinates (assuming $$z$$ is up) since we can just extrude the $$z$$ component along the face's normal vector.
 
-Now let's assume that our tiles' corner points are $$\vec{a} = (0, 0)$$, $$\vec{b} = (1, 0)$$, $$\vec{c} = (0, 1)$$ and $$\vec{d} = (1, 1)$$ (that is, our tile is a *unit square*). A arbitrary quad on our mesh is defined by four vertices in 3D space, let's call them $$\vec{a}'$$, $$\vec{b}'$$, $$\vec{c}'$$ and $$\vec{c}'$$.
+Now let's assume that our tiles' corner points are $$\vec{a} = (0, 0)$$, $$\vec{b} = (1, 0)$$, $$\vec{c} = (0, 1)$$ and $$\vec{d} = (1, 1)$$ (that is, our tile is defined inside a *unit square*). A arbitrary quad on our mesh is defined by four vertices in 3D space, let's call them $$\vec{a}'$$, $$\vec{b}'$$, $$\vec{c}'$$ and $$\vec{d}'$$.
 
-Then, each coordinate $$\vec{p} = (x, y)$$ in the original tile can be described by the bilinear parametrisation
+Each coordinate $$\vec{p} = (x, y)$$ in the *original* tile can be described by the bilinear parametrisation
 
 $$\begin{align}
-  \vec{p} &= (1 - x) \cdot (1 - y) \cdot \vec{a} + x \cot (1 - y) \cdot \vec{b}) + (1 - x) \cdot y \cdot \vec{c} + x \cdot y \cdot \vec{d} \\
+  \vec{p} &= (1 - x) \cdot (1 - y) \cdot \vec{a} + x \cdot (1 - y) \cdot \vec{b} + (1 - x) \cdot y \cdot \vec{c} + x \cdot y \cdot \vec{d} \\
           &= \vec{a} + x \cdot (1 - y) \cdot (\vec{b} - \vec{a}) + (1 - x) \cdot y \cdot (\vec{c} - \vec{a}) + x \cdot y \cdot (\vec{d} - \vec{a})
 \end{align}$$
 
@@ -143,22 +143,22 @@ $$\begin{align}
   \vec{p}' &= \vec{a}' + x \cdot (1 - y) \cdot (\vec{b}' - \vec{a}') + (1 - x) \cdot y \cdot (\vec{c}' - \vec{a}') + x \cdot y \cdot (\vec{d}' - \vec{a}')
 \end{align}$$
 
-where $$\vec{p}'$$ is the resulting coordinate.
+where $$\vec{p}'$$ is the resulting coordinate inside the quad.
 
 {{ site.beginFigure }}
 <img src="assets/bilinear.png" width="20%"> <img src="assets/bilinear_transform.png" width="20%">
 {{ site.beginCaption }}
-Transforming the point $$\vec{p}$$ to the point $$\vec{p}'$$ in the new quad.
+Transforming the point $$\vec{p}$$ to the point $$\vec{p}'$$ inside the new quad.
 {{ site.endCaption }}
 {{ site.endFigure }}
 
-We can also easily rotate tiles by renaming the new quads' corners.
+We can also easily rotate tiles by reordering the new quads' corners.
 
 {{ site.beginInfoBox }}
 {{ site.beginInfoBoxTitle }}
 Coordinate Systems
 {{ site.endInfoBoxTitle }}
-Pay attention to the coordinate system your engine is using. Godot, for example, uses a different convention than Blender so the order and sign of the vertex coordinates of my tile meshes changes. In this case, the code to deform the tile looks like this ($$z$$ and $$y$$ are switched and $$z$$ changes sign as well):
+Pay attention to the coordinate system your tool or engine is using. The Godot engine, for example, uses a different coordinate convention than Blender so the order and sign of the vertex coordinates of my tile meshes change on import to Godot. In this case, the code I use to deform the tile looks like this ($$y$$ and $$z$$ are switched and $$z$$ changes sign as well):
 
 ```GDScript
 var mdt = MeshDataTool.new()
@@ -176,7 +176,7 @@ Below is a nice figure illustrating the coordinate conventions used by different
 {{ site.beginFigure }}
 <img src="assets/coordsystems.jpg" width="50%">
 {{ site.beginCaption }}
-Coordinate system conventions used by different softwares. Source:[@FreyaHolmer](https://twitter.com/FreyaHolmer/status/1325556229410861056/photo/1).
+Coordinate system conventions used by different softwares. Source: [@FreyaHolmer](https://twitter.com/FreyaHolmer/status/1325556229410861056/photo/1).
 {{ site.endCaption }}
 {{ site.endFigure }}
 
@@ -184,18 +184,18 @@ Coordinate system conventions used by different softwares. Source:[@FreyaHolmer]
 
 ### A Brief Introduction to Marching Squares
 
-The most straightforward way of placing tiles on a grid is to assign values to each face of said grid and then draw the corresponding tiles. For very simple cases, this may work. However, you will quickly run into problems when you want to draw transitions between e.g. water and land tiles. A very popular way of solving this is to use **marching squares**.
+The most straightforward way of placing tiles on a grid or mesh is to assign values to each face of said grid and then draw the corresponding tiles. For very simple cases, this may work. However, you will quickly run into problems when you want to draw transitions between tiles, for example a shoreline between water and land. A very popular way of solving this is to use **marching squares**.
 
-In marching squares, values are not assigned to the individual faces but to the grid *vertices* instead. For each quad tile we then read the values of its four corner vertices and choose the corresponding tile. For a simple configuration with two values like "land" and "water" we need to check for a total of 16 cases per cell. Since many of these are just rotations of other cases we only need to create a total of 6 different tiles to make marching squares run. (There are other algorithms which use more diverse tilesets as well like the [blob tileset](http://www.cr31.co.uk/stagecast/wang/blob.html) but most of them boil down to the same concept.)
+In marching squares, values are not assigned to the individual faces but to the mesh *vertices* instead. For each quad face we then read the values of its four corner vertices and choose the corresponding tile. In case of a simple configuration with two values like "land" and "water" we need to check for a total of 16 cases per cell. Since many of these are just rotated versions of other cases we only need to create a total of 6 different tiles to make marching squares run. (There are other algorithms which use more diverse tilesets as well like the [blob tileset](http://www.cr31.co.uk/stagecast/wang/blob.html) but most of them boil down to the same concept.)
 
 {{ site.beginFigure }}
 <img src="assets/lut.png" width="35%">
 {{ site.beginCaption }}
-Look-up table with all possible face configurations and their corresponding tile drawn in. Solid vertices correspond to land while empty vertices are water.
+Look-up table with all possible face configurations and their corresponding tile drawn in. Solid vertices could e.g. correspond to land while empty vertices are water.
 {{ site.endCaption }}
 {{ site.endFigure }}
 
-Desprite its name the algorithm works without modifications on any quadrilateral mesh so there is no downside to using it on an irregular grid. It even allows building non-recangular structures with ease since the vertices do not neccessarily need to have exactly four neighbours. In my oppinion, this improves the organic feeling a lot.
+Despite its name marchings squares works without modifications on any quadrilateral mesh so there is no downside to using it on an irregular grid. It even allows building non-rectangular structures with ease since the vertices do not neccessarily need to have exactly four neighbours. In my oppinion, this improves the organic feeling a lot.
 
 {{ site.beginFigure }}
 <img src="assets/marching_squares_examples.png" width="15%">
@@ -217,5 +217,5 @@ Example tile modeled in Blender.
 {{ site.beginInfoBoxTitle }}
 Marching Cubes
 {{ site.endInfoBoxTitle }}
-You may or may not have heard of [marching cubes](https://en.wikipedia.org/wiki/Marching_cubes), marching square's big brother. It translates the same concept to three dimensions (with 256 possible configurations per cube out of which 15 are unique when not accounting for rotation). You can use it to allow for building upwards so the player can create towers etc.
+You may or may not have heard of [marching cubes](https://en.wikipedia.org/wiki/Marching_cubes), marching square's big brother. It translates the same concept to three dimensions (with 256 possible configurations per cube with 15 unique tiles required). You can use it to allow the player to built upwards and create towers and much more.
 {{ site.endInfoBox }}
