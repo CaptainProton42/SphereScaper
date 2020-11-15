@@ -204,6 +204,13 @@ Example for applying the marching squares algorithm to an irregular grid using t
 
 I don't want to delve much deeper here but in case you want to know more about marching squares, I found the [Wikipedia article](https://en.wikipedia.org/wiki/Marching_squares) to be surprisingly helpful and there are lots of tutorials explicitly on the topic out there.
 
+{{ site.beginFigure }}
+<img src="assets/example_tile.png" width="45%">
+{{ site.beginCaption }}
+Example tile modeled in Blender.
+{{ site.endCaption }}
+{{ site.endFigure }}
+
 {{ site.beginInfoBox }}
 {{ site.beginInfoBoxTitle }}
 Marching Cubes
