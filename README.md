@@ -129,11 +129,11 @@ Now let's assume that our tiles' corner points are $$\vec{a} = (0, 0)$$, $$\vec{
 Then, each coordinate $$\vec{p} = (x, y)$$ in the original tile can be described by the bilinear parametrisation
 
 $$\begin{align}
-  \vec{p} &= (1 - x) \cdot (1 - y) \cdot \vec{a} + x \cot (1 - y) \cdot \vec{b}) + (1 - x) \cdot y \cdot \vec{c} + x \cdot y \cdot \vec{d}
+  \vec{p} &= (1 - x) \cdot (1 - y) \cdot \vec{a} + x \cot (1 - y) \cdot \vec{b}) + (1 - x) \cdot y \cdot \vec{c} + x \cdot y \cdot \vec{d} \\
           &= \vec{a} + x \cdot (1 - y) \cdot (\vec{b} - \vec{a}) + (1 - x) \cdot y \cdot (\vec{c} - \vec{a}) + x \cdot y \cdot (\vec{d} - \vec{a})
 \end{align}$$
 
-We can easily transform this parametrisation to the new quad
+We can easily transform this to the new quad
 
 $$\begin{align}
   \vec{p}' &= \vec{a}' + x \cdot (1 - y) \cdot (\vec{b}' - \vec{a}') + (1 - x) \cdot y \cdot (\vec{c}' - \vec{a}') + x \cdot y \cdot (\vec{d}' - \vec{a}')
@@ -141,9 +141,27 @@ $$\begin{align}
 
 where $$\vec{p}'$$ is the resulting coordinate.
 
+{{ site.beginFigure }}
+<img src="assets/bilinear.png" width="20%"> <img src="assets/bilinear_transform.png" width="20%">
+{{ site.beginCaption }}
+Transforming the point $$\vec{p}$$ to the point $$\vec{p}'$$ in the new quad.
+{{ site.endCaption }}
+{{ site.endFigure }}
+
 {{ site.beginInfoBox }}
 {{ site.beginInfoBoxTitle }}
-Storing and Loading the Grid
+Coordinate Systems
 {{ site.endInfoBoxTitle }}
-In case you are not generating the grid on the fly
+Pay attention to the coordinate system your engine is using. Godot, for example, uses a different convention than Blender so the order and sign of the vertex coordinates changes. In this case, the code to deform the tile looks like this ($$z$$ and $$y$$ switch and $$z$$ changes sign as well):
+
+```GDScript
+var mdt = MeshDataTool.new()
+...
+var v = mdt.get_vertex(i)
+...
+v = a + v.x * (1.0 + v.z) * (b - a) - (1.0 - v.x) * v.z * (c - a) - v.x * v.z * (d - a) + v.normalized() * v.y
+...
+```
+
+Since the grid is spherical I can also extrude along the normalized vertex position vector which is more accurate than using face normals.
 {{ site.endInfoBox }}
