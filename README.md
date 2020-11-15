@@ -120,6 +120,8 @@ Using my approach, the final result looks like this:
 
 ## Bonus: Tiles and Marching Squares
 
+### Deforming the Tiles
+
 So now we have our mesh. But what can we actually do with it? I decided to go for a *very* minimalistic Townscaper clone which uses the sphere mesh for building. Call it *SphereScaper* or an equally creative name.
 
 One advantage of the quad mesh is, that we can place deformed square tiles at each quad. The math for this is relatively simple. We only need to deform our mesh in the $$x$$- and $$y$$-directions (assuming $$z$$ is up) since we can just extrude the $$z$$ component along the quads normal vector.
@@ -148,6 +150,8 @@ Transforming the point $$\vec{p}$$ to the point $$\vec{p}'$$ in the new quad.
 {{ site.endCaption }}
 {{ site.endFigure }}
 
+We can also easily rotate tiles by renaming the new quads' corners.
+
 {{ site.beginInfoBox }}
 {{ site.beginInfoBoxTitle }}
 Coordinate Systems
@@ -174,4 +178,35 @@ Coordinate system conventions used by different softwares. Source:[@FreyaHolmer]
 {{ site.endCaption }}
 {{ site.endFigure }}
 
+{{ site.endInfoBox }}
+
+### A Brief Introduction to Marching Squares
+
+The most straightforward way of placing tiles on a grid is to assign values to each face of said grid and then draw the corresponding tiles. For very simple cases, this may work. However, you will quickly run into problems when you want to draw transitions between e.g. water and land tiles. A very popular way of solving this is to use **marching squares**.
+
+In marching squares, values are not assigned to the individual faces but to the grid *vertices* instead. For each quad tile we then read the values of its four corner vertices and choose the corresponding tile. For a simple configuration with two values like "land" and "water" we need to check for a total of 16 cases per cell. Since many of these are just rotations of other cases we only need to create a total of 6 different tiles to make marching squares run. (There are other algorithms which use more diverse tilesets as well like the [blob tileset](http://www.cr31.co.uk/stagecast/wang/blob.html) but most of them boil down to the same concept.)
+
+{{ site.beginFigure }}
+<img src="assets/lut.png" width="35%">
+{{ site.beginCaption }}
+Look-up table with all possible face configurations and their corresponding tile drawn in. Solid vertices correspond to land while empty vertices are water.
+{{ site.endCaption }}
+{{ site.endFigure }}
+
+Desprite its name the algorithm works without modifications on any quadrilateral mesh so there is no downside to using it on an irregular grid. It even allows building non-recangular structures with ease since the vertices do not neccessarily need to have exactly four neighbours. In my oppinion, this improves the organic feeling a lot.
+
+{{ site.beginFigure }}
+<img src="assets/marching_squares_examples.png" width="15%">
+{{ site.beginCaption }}
+Example for applying the marching squares algorithm to an irregular grid using the look-up table from above.
+{{ site.endCaption }}
+{{ site.endFigure }}
+
+I don't want to delve much deeper here but in case you want to know more about marching squares, I found the [Wikipedia article](https://en.wikipedia.org/wiki/Marching_squares) to be surprisingly helpful and there are lots of tutorials explicitly on the topic out there.
+
+{{ site.beginInfoBox }}
+{{ site.beginInfoBoxTitle }}
+Marching Cubes
+{{ site.endInfoBoxTitle }}
+You may or may not have heard of [marching cubes](https://en.wikipedia.org/wiki/Marching_cubes), marching square's big brother. It translates the same concept to three dimensions (with 256 possible configurations per cube out of which 15 are unique when not accounting for rotation). You can use it to allow for building upwards so the player can create towers etc.
 {{ site.endInfoBox }}
