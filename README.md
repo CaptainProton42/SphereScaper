@@ -82,7 +82,7 @@ The mesh after the edge removal step.
 We are currently facing one problem: Our result should be a *quad* mesh, that is, a mesh consisting only of faces with four corners. But there are still some triangles left in our current mesh. Luckily, triangles can easily subdivided into three smaller quads from the middle of each edge. In the same way, the already existing quads can be subdivided into four smaller quads. By doing this, we thus end up with a mesh consisting *only* of quads.
 
 {{ site.beginFigure }}
-<img src="assets/subdivide_quad.png" width="20%"> <img src="assets/subdivide_tri.png" width="20%">
+<img src="assets/subdivide_quad.png" width="10%"><span style="padding-left:20px"></span><img src="assets/subdivide_tri.png" width="10%">
 {{ site.beginCaption }}
 Subdividing a quad and a triangle into smaller quads.
 {{ site.endCaption }}
