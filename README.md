@@ -164,4 +164,14 @@ v = a + v.x * (1.0 + v.z) * (b - a) - (1.0 - v.x) * v.z * (c - a) - v.x * v.z * 
 ```
 
 Since the grid is spherical I can also extrude along the normalized vertex position vector which is more accurate than using face normals.
+
+Below is a nice figure illustrating the coordinate conventions used by different engines and softwares:
+
+{{ site.beginFigure }}
+<img src="assets/coordsystems.jpg" width="50%">
+{{ site.beginCaption }}
+Coordinate system conventions used by different softwares. Source:[@FreyaHolmer](https://twitter.com/FreyaHolmer/status/1325556229410861056/photo/1).
+{{ site.endCaption }}
+{{ site.endFigure }}
+
 {{ site.endInfoBox }}
