@@ -152,7 +152,7 @@ Transforming the point $$\vec{p}$$ to the point $$\vec{p}'$$ in the new quad.
 {{ site.beginInfoBoxTitle }}
 Coordinate Systems
 {{ site.endInfoBoxTitle }}
-Pay attention to the coordinate system your engine is using. Godot, for example, uses a different convention than Blender so the order and sign of the vertex coordinates changes. In this case, the code to deform the tile looks like this ($$z$$ and $$y$$ switch and $$z$$ changes sign as well):
+Pay attention to the coordinate system your engine is using. Godot, for example, uses a different convention than Blender so the order and sign of the vertex coordinates of my tile meshes changes. In this case, the code to deform the tile looks like this ($$z$$ and $$y$$ are switched and $$z$$ changes sign as well):
 
 ```GDScript
 var mdt = MeshDataTool.new()
@@ -163,7 +163,7 @@ v = a + v.x * (1.0 + v.z) * (b - a) - (1.0 - v.x) * v.z * (c - a) - v.x * v.z * 
 ...
 ```
 
-Since the grid is spherical I can also extrude along the normalized vertex position vector which is more accurate than using face normals.
+Since the grid is spherical I can also extrude along the normalized vertex position vector `v.normalized()` which is more accurate than using face normals.
 
 Below is a nice figure illustrating the coordinate conventions used by different engines and softwares:
 
