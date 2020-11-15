@@ -21,7 +21,7 @@ I recently created a tweet about creating an organic looking quad mesh on a sphe
 <blockquote class="twitter-tweet" data-dnt="true"><p lang="en" dir="ltr">I managed to apply <a href="https://twitter.com/OskSta?ref_src=twsrc%5Etfw">@OskSta</a>&#39;s amazing organic quad grid generation to a sphere! Not sure yet if I should do anything with it 🤔 <a href="https://twitter.com/hashtag/GodotEngine?src=hash&amp;ref_src=twsrc%5Etfw">#GodotEngine</a> <a href="https://t.co/sqA35TQCaf">pic.twitter.com/sqA35TQCaf</a></p>&mdash; CaptainProton42 (@CaptainProton42) <a href="https://twitter.com/CaptainProton42/status/1325752495235330049?ref_src=twsrc%5Etfw">November 9, 2020</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 </div>
 
-Since I got some feedback and people asking me how I achieved this, I decided to give some more context. Don't expect a full-on tutorial here on how to do this in the engine of your choice. Instead, this is supposed to give you some more background and tricks on how to achieve something like this and explain some of the (suprisingly simple) theory. I will attempt to cover the grid generation itself as well as give a brief introduction to marching squares.
+Since I got some feedback and people asking me how to do this, I decided to give some more context. However, don't expect a full-on tutorial for the engine of your choice. Instead, this is supposed to give you some more background on how to implement something like this and explain some of the theory behind it. I will attempt to cover the grid generation itself as well as give a brief introduction to tile placement and marching squares.
 
 As is probably already clear to you, this is directly based on a grid generation algorithm that [Oskar Stålberg](https://twitter.com/osksta) posted on Twitter a while ago and which he uses in his sandbox town building game [Townscaper](https://store.steampowered.com/app/1291340/Townscaper/). He has also written a very in-depth post on the process of building the tech behind Townscaper on [imgur](https://imgur.com/gallery/i364LBr).
 
@@ -29,14 +29,7 @@ As is probably already clear to you, this is directly based on a grid generation
 <blockquote class="twitter-tweet" data-conversation="none" data-dnt="true"><p lang="en" dir="ltr">I present: <br>Fairly even irregular quads grid in a hex<br><br>Todo: <br>1. Heuristic to reduce (or eliminate) 6 quad verts<br>2. Tile these babies to infinity <a href="https://t.co/o0kU68uovZ">pic.twitter.com/o0kU68uovZ</a></p>&mdash; Oskar Stålberg (@OskSta) <a href="https://twitter.com/OskSta/status/1147881669350891521?ref_src=twsrc%5Etfw">July 7, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
   </div>
 
-To summarize the algorithm:
-
-1. Start with a triangulation (in this case triangles in a hexagon)
-2. Remove random edges triangles to create quads (we will now have a grid consisting of mostly quads but also some triangles)
-3. Subdivide *all quads and triangles* into new quads
-4. Relax the mesh to make it look more natural
-
-So now that we know the basic algorithm for meshes in a plane, what do we need to do to adapt it for a sphere?
+This was, however, only presented for a place mesh so far. What do we need to do to adapt it for a sphere (or even crazier shapes)?
 
 The surprisingly simple answer is: *nothing*.
 
@@ -44,9 +37,16 @@ For the slightly more complicated answer, keep reading.
 
 ## Grid Generation
 
+To summarize the algorithm:
+
+1. Start with a triangulation (in the tweeet above triangles in a hexagon)
+2. Remove random edges triangles to create quads (we will now have a grid consisting of mostly quads but also some triangles)
+3. Subdivide *all quads and triangles* into new quads
+4. Relax the mesh to make it look more natural
+
 ### Step 1: Triangulation
 
-The first step of the algorithm requires a triangulation. What is a triangulation? Well, there are many definitions (including but not limited to tracking bad guys in police crima drama series) but in our case we will define it as surface triangulation which, in the words of [Wikipedia](https://en.wikipedia.org/wiki/Surface_triangulation), is "a net of triangles, which covers a given surface partly or totally". In the tweet above we start with the triangulation of a hexagon but we can triangulate any surface, really.
+The first step of the algorithm requires a triangulation. What is a triangulation, you ask? Well, there are many definitions (*including but not limited to tracking bad guys in police crime drama series*) but in our case we will define it as surface triangulation which, with the words of [Wikipedia](https://en.wikipedia.org/wiki/Surface_triangulation), is "a net of triangles, which covers a given surface partly or totally". Simply put, we split our initial shape into many smaller triangles. In the tweet above this is the triangulation of a hexagon but we can triangulate any surface, really.
 
 A popular triangulation of the surface of a sphere is the so-called [icosphere](https://en.wikipedia.org/wiki/Geodesic_polyhedron). It is, of course, not the only triangulation but it has some nice properties including the fact that all triangles have the same size.
 
@@ -54,10 +54,10 @@ A popular triangulation of the surface of a sphere is the so-called [icosphere](
 {{ site.beginInfoBoxTitle }}
 Which Software Should You Use?
 {{ site.endInfoBoxTitle }}
-I am doing all the grid generation in Blender, mainly because Blender's `bmesh` [module](https://docs.blender.org/api/current/bmesh.html) is a breeze to work with and already has most operations (like removing edges, subdividing faces, etc.) defined. Of course, you can do this using whichever software or tool you want and even directly in-engine for grid generation on the fly.
+I am doing all the grid generation in Blender, mainly because Blender's `bmesh` [module](https://docs.blender.org/api/current/bmesh.html) is a breeze to work with and already has most operations (like removing edges, subdividing faces, etc.) implemented. Of course, you can do all this using whichever software or tool you prefer (and even directly in-engine if you want to do the grid generation in real-time).
 {{ site.endInfoBox }}
 
-Below is an image of our starting icosphere in Blender:
+Below is an image of our icosphere in Blender:
 
 {{ site.beginFigure }}
 <img src="assets/icosphere.png" width="50%">
@@ -68,7 +68,9 @@ Our starting triangulation, the icosphere.
 
 ### Step 2: Removing Edges
 
-Removing edges is relatively straightforward. However, we need to be careful to keep track of which edges we have already removed as to not accidentally remove an edge of an already quad face: When we remove an edge, we can't remove the edges of the two now merged faces either. I solved this by keeping track of a separate set of edges that are stil "available" and only removing edges listed in it from the mesh. If we did everything right, our former icosphere should now look something like this:
+Removing edges is relatively straightforward. However, we need to be careful to keep track of which edges we have already removed as to not accidentally remove an edge of aface that is already a quad. The rule for this is simple: when we remove an edge between to faces, we can't remove the remaining six edges of the two now merged faces anymore. I solved this by keeping track of a list of edges that are stil "available" and only removing edges listed there from the mesh. When I remove an edge from the mesh, I remove the now forbidden six edges from the list.
+
+If we did everything right, our former icosphere should now look something like this:
 
 {{ site.beginFigure }}
 <img src="assets/removed_edges.png" width="50%">
@@ -79,7 +81,7 @@ The mesh after the edge removal step.
 
 ### Step 3: Subdivide Faces
 
-We are currently facing one problem: Our result should be a *quad* mesh, that is, a mesh consisting only of faces with four corners. But there are still some triangles left in our current mesh. Luckily, triangles can easily subdivided into three smaller quads from the middle of each edge. In the same way, the already existing quads can be subdivided into four smaller quads. By doing this, we thus end up with a mesh consisting *only* of quads.
+We are currently facing one problem: Our result should be a *quad* mesh. That is, a mesh consisting only of faces with four corners. But there are still some triangles left in our current mesh. Luckily, triangles can easily subdivided into three smaller quads as illustrated in figure 3. In the same way, the already existing quads can be subdivided into four smaller quads as well. By doing this, we thus end up with a mesh consisting *only* of quads.
 
 {{ site.beginFigure }}
 <img src="assets/subdivide_quad.png" width="10%"><span style="padding-left:20px"></span><img src="assets/subdivide_tri.png" width="10%">
@@ -99,15 +101,15 @@ The mesh with all faces subdivided into quads.
 
 ### Step 4: Mesh Relaxation
 
-We are now almost where we want to be but the mesh does not look very organic yet. This is where the mesh relaxation comes in. For me, this was the most tricky step since it involved some experimentation to get it to look right.
+We are now almost where we want to be but the mesh does not look very organic yet. This is where the mesh relaxation comes in. For me, this was the trickiest step since it involved some experimentation to get it to look just right.
 
-In the simpler case of a mesh in a plane, there are some ressources available which outline possible relaxation methods, like [this article](https://andersource.dev/2020/11/06/organic-grid.html) from andersource.dev, but most of them seem to involve [letting each quad force its vertices into a square](https://twitter.com/OskSta/status/1147946734326288390).
+In the simpler case of a mesh in a plane, there are some ressources available which outline possible relaxation methods, like [this article](https://andersource.dev/2020/11/06/organic-grid.html) from andersource.dev, but most of them seem to involve [letting each quad force its vertices into a square shape](https://twitter.com/OskSta/status/1147946734326288390).
 
-I see no reason why an approach like this shouldn't work on a spherical mesh as well. However, I approached the problem from a slightly different angle and started with [Laplacian smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing) which is generally used to make meshes smoother. In the end I needed to augment this by adding forces which try to prevent too small/large and thin quads as well. There are probably many good ways too relax the mesh but some good guidelines should be:
+I see no reason why an approach like this shouldn't work on a spherical mesh as well. However, I approached the problem from a slightly different angle and started with [Laplacian smoothing](https://en.wikipedia.org/wiki/Laplacian_smoothing) which is generally used smoothe meshes. In the end I needed to augment this by adding forces which try to prevent too small/large and thin quads as well. There are probably many good ways too relax the mesh but some good guidelines should be:
 
-* each quad should be as square as possible
-* all quads should have approximately the same area
-* or any similar criteria
+- each quad should be as square as possible
+- all quads should have approximately the same area
+- or any similar criteria
 
 Using my approach, the final result looks like this:
 
