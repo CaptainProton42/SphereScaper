@@ -219,3 +219,7 @@ Marching Cubes
 {{ site.endInfoBoxTitle }}
 You may or may not have heard of [marching cubes](https://en.wikipedia.org/wiki/Marching_cubes), marching square's big brother. It translates the same concept to three dimensions (with 256 possible configurations per cube with 15 unique tiles required). You can use it to allow the player to built upwards and create towers and much more.
 {{ site.endInfoBox }}
+
+## Thanks for Reading! 🎉
+
+If you have any questions or feedback, feel free to contact me on Twitter: [@CaptainProton42](https://twitter.com/CaptainProton42).
